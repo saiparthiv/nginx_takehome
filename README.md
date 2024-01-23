@@ -22,7 +22,7 @@ access_log /var/log/nginx/access.log custom;
 ```
 
 Q3. The third question is about adding HTTP security headers in Nginx, but only if they are not already set in the response from the upstream server. The question also lists default values for various headers like Strict-Transport-Security, X-Content-Type-Options, X-XSS-Protection etc. <br>
-Solution. We will use another location block for this and utilize `add_header`. The `add_header` directive allows us to define security headers and value to be included in all response codes, including error responses. The purpose of using the `always` parameter ensures headers are added regardless of response code.
+Solution. We will use another location block for this and utilize `add_header`. Here each `add_header` directive is wrapped in an `if block` that checks whether the respective header is already set in the upstream response. If the header is not present in the response (`$sent_http_*` variables are used for this purpose), then the `add_header` directive adds it. This ensures that headers are added conditionally, avoiding duplication if they are already set by the upstream server. The purpose of using the `always` parameter ensures headers are added regardless of response code.
 ```js
 location / {
             # Proxy pass requests to an upstream server.
