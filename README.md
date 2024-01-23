@@ -25,16 +25,31 @@ Q3. The third question is about adding HTTP security headers in Nginx, but only 
 Solution. We will use another location block for this and utilize `add_header`. The `add_header` directive allows us to define security headers and value to be included in all response codes, including error responses. The purpose of using the `always` parameter ensures headers are added regardless of response code.
 ```js
 location / {
-    proxy_pass http://your_upstream_server;
+            # Proxy pass requests to an upstream server.
+            proxy_pass http://your_upstream_server;
 
-    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
-    add_header X-Content-Type-Options "nosniff" always;
-    add_header X-XSS-Protection "1; mode=block" always;
-    add_header X-Frame-Options "DENY" always;
-    add_header Content-Security-Policy "frame-ancestors 'none'" always;
-    add_header Access-Control-Allow-Credentials "TRUE" always;
+            # Add various security headers to the response conditionally.
+            if ($sent_http_strict_transport_security = "") {
+                add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+            }
+            if ($sent_http_x_content_type_options = "") {
+                add_header X-Content-Type-Options "nosniff" always;
+            }
+            if ($sent_http_x_xss_protection = "") {
+                add_header X-XSS-Protection "1; mode=block" always;
+            }
+            if ($sent_http_x_frame_options = "") {
+                add_header X-Frame-Options "DENY" always;
+            }
+            if ($sent_http_content_security_policy = "") {
+                add_header Content-Security-Policy "frame-ancestors 'none'" always;
+            }
+            if ($sent_http_access_control_allow_credentials = "") {
+                add_header Access-Control-Allow-Credentials "TRUE" always;
+            }
 
-    proxy_set_header X-Real-IP $remote_addr;
-    proxy_set_header Host $host;
-}
+            # Set headers to be passed to the upstream server.
+            proxy_set_header X-Real-IP $remote_addr; # Pass the client's real IP.
+            proxy_set_header Host $host; # Pass the request's host header.
+        }
 ```
